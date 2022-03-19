@@ -1,2 +1,2 @@
-# JA-Traefik-Manager
-Just Another Traefik Manager - Manage your services in easy way
+# JA-Traefik-Helper
+Just Another Traefik Helper - Manage your services in easy way
