@@ -11,8 +11,13 @@ set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
+config_dir="$WARDEN_ROOT/config"
 TRUE='true'
 FALSE='false'
+START_MODE="start"
+STOP_MODE="stop"
+MODES=("$START_MODE" "$STOP_MODE")
+DEFAULT_COMPOSE_PATH="$PWD/docker-compose.yaml"
 
 usage() {
     cat <<EOF
@@ -71,50 +76,43 @@ die() {
 }
 
 parse_params() {
-    config_dir=""
-    config_file=""
 
     while :; do
         case "${1-}" in
         -h | --help) usage ;;
         -v | --verbose) set -x ;;
         -nc | --no-color) NO_COLOR=1 ;;
-        -C | --config-dir)
-            config_dir=${2-"$script_dir/config"}
-            shift
-            ;;
-        -c | --service_name)
-            config_file=${2-"example"}
-            shift
-            ;;
         -?*) die "Unknown option: $1" ;;
         *) break ;;
         esac
         shift
     done
 
-    if [ -z "$config_dir" ] && [ -z "$config_file" ]; then
-        echo "SERVICE"
-        service_config="${1-""}"
-        config_path="$service_config"
-    else
-        echo "NO SERVICE"
-        config_path="$config_dir/$config_file.yaml"
-    fi
-
-    config_path=$(readlink -f "$config_path")
+    mode=${1-""}
+    service_name=${2-""}
+    compose_file=${3-""}
 
     return 0
 }
 
+check_params() {
+    [[ -z "$mode" ]] && die "No mode defined"
+    [[ ${MODES[*]} =~ ${mode} ]] || die "Mode not recognized"
+    [[ -z "$service_name" ]] && die "No service name defined" || service_config=$(readlink -f "$config_dir/$service_name")
+    [[ -z "$compose_file" ]] && [ -f "$DEFAULT_COMPOSE_PATH" ] \
+        && compose_file=$(readlink -f "$DEFAULT_COMPOSE_PATH") || die "No docker-compose.yaml defined"
+}
+
 print_options() {
-    msg "${INFO}Config directory: $config_dir${NOFORMAT}"
-    msg "${INFO}Config file: $config_file${NOFORMAT}"
-    msg "${INFO}Config path: $config_path${NOFORMAT}"
+    msg "${INFO}Mode: $mode${NOFORMAT}"
+    msg "${INFO}Service name: $service_name${NOFORMAT}"
+    msg "${INFO}Service config: $service_config${NOFORMAT}"
+    msg "${INFO}Docker compose file: $compose_file${NOFORMAT}"
 }
 
 parse_params "$@"
 setup_colors
+check_params
 
 msg "${INFO}Starting:${NOFORMAT}"
 print_options

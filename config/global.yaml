@@ -1,0 +1,10 @@
+services:
+  app:
+    networks:
+      - http
+    labels:
+      - 'traefik.enable=true'
+
+networks:
+  http:
+    external: true
