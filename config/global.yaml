@@ -3,7 +3,7 @@ services:
     networks:
       - http
     labels:
-      - 'traefik.enable=true'
+      traefik.enable: true
 
 networks:
   http:

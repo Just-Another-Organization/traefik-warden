@@ -9,7 +9,7 @@
 
 set -Eeuo pipefail
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
-script_name='traefik-warden.sh'
+script_name='warden.sh'
 warden_root=${1-"$HOME/.warden"}
 
 install "$script_dir/$script_name" "$HOME/.local/bin/${script_name%.*}"

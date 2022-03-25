@@ -107,6 +107,7 @@ parse_params() {
 
     mode=${1-""}
     [[ ${MODES[*]} =~ ${mode} ]] && shift
+    [[ -n "$mode" ]] && [[ "$mode" != "$CREATE_MODE" ]] && service_name=${1-""}
 
     while :; do
         case "${1-}" in
@@ -162,6 +163,9 @@ print_options() {
 generate_docker_compose() {
     msg "${INFO}Generating docker compose${NOFORMAT}"
     merged_json=$(yq -s 'reduce .[] as $item ({}; . * $item)' "$global_config" "$service_config" "$compose_file")
+
+    # Healthcheck property is not supported by Traefik
+    merged_json=$(echo "$merged_json" | jq 'del(..|.healthcheck?)')
     echo "$merged_json" | yq -y >"$warden_docker_compose"
 }
 
