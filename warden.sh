@@ -19,8 +19,9 @@ set -Eeuo pipefail
 trap cleanup SIGINT SIGTERM ERR EXIT
 
 script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd -P)
-config_dir="$WARDEN_ROOT/config"
-global_config="$config_dir/global.yaml"
+services_dir="$WARDEN_ROOT/services"
+templates_dir="$WARDEN_ROOT/templates"
+global_config="$services_dir/global.yaml"
 CREATE_MODE="create"
 GENERATE_MODE="generate"
 START_MODE="start"
@@ -103,6 +104,7 @@ parse_params() {
     port=""
     domain=""
     service_name=""
+    template_name="default"
     compose_file=""
 
     mode=${1-""}
@@ -115,16 +117,12 @@ parse_params() {
         -v | --version) die "Version $VERSION" ;;
         -V | --verbose) set -x ;;
         -nc | --no-color) NO_COLOR=1 ;;
-        -p | --port)
-            port=${2-"80"}
-            shift
-            ;;
-        -d | --domain)
-            domain=${2-"domain.com"}
-            shift
-            ;;
         -s | --service)
             service_name=${2-""}
+            shift
+            ;;
+        -t | --template)
+            template_name=${2-""}
             shift
             ;;
         -f | --file)
@@ -143,7 +141,8 @@ parse_params() {
 check_params() {
     [[ -z "$mode" ]] && die "No mode defined"
     [[ ${MODES[*]} =~ ${mode} ]] || die "Mode not recognized"
-    [[ -z "$service_name" ]] && die "No service name defined" || service_config=$(readlink -f "$config_dir/$service_name.yaml")
+    [[ -z "$service_name" ]] && die "No service name defined" || service_config=$(readlink -f "$services_dir/$service_name.yaml")
+    [[ -z "$template_name" ]] && die "No template name defined" || template_config=$(readlink -f "$templates_dir/$template_name.yaml")
 
     if [[ "$mode" != "$CREATE_MODE" ]]; then
         [[ -z "$compose_file" ]] && [ -f "$DEFAULT_COMPOSE_PATH" ] && compose_file="$DEFAULT_COMPOSE_PATH"
@@ -157,6 +156,7 @@ print_options() {
     msg "${INFO}Mode: $mode${NOFORMAT}"
     msg "${INFO}Service name: $service_name${NOFORMAT}"
     msg "${INFO}Service config: $service_config${NOFORMAT}"
+    msg "${INFO}Template config: $template_config${NOFORMAT}"
     msg "${INFO}Docker compose file: $compose_file${NOFORMAT}"
 }
 
@@ -186,10 +186,14 @@ stop_docker_compose() {
 }
 
 create_service_config() {
-    cp "$config_dir/template.yaml" "$service_config"
-    sed -i "s/SERVICE_NAME_PLACEHOLDER/${service_name}/g" "$service_config"
-    sed -i "s/DOMAIN_PLACEHOLDER/${domain}/g" "$service_config"
-    sed -i "s/PORT_PLACEHOLDER/${port}/g" "$service_config"
+    yq '.content' "$template_config" | yq -y >"$service_config"
+    placeholders=$(yq '.placeholders' "$template_config")
+
+    echo "$placeholders" | jq -c '.[]' | while read -r i; do
+        key=$(echo "$i" | jq -r 'keys | .[]')
+        value=${!key:-$(echo "$i" | jq -r '.[]')}
+        sed -i "s/$key/$value/g" "$service_config"
+    done
 }
 
 clean_environment() {

@@ -1,0 +1,18 @@
+placeholders:
+  - SERVICE_NAME_PLACEHOLDER: service
+  - DOMAIN_PLACEHOLDER: example.com
+  - PORT_PLACEHOLDER: 80
+
+content:
+  services:
+    app:
+      labels:
+        traefik.http.routers.SERVICE_NAME_PLACEHOLDER.rule: Host(`SERVICE_NAME_PLACEHOLDER.DOMAIN_PLACEHOLDER`)
+        traefik.http.routers.SERVICE_NAME_PLACEHOLDER.rule: HostHeader(`SERVICE_NAME_PLACEHOLDER.DOMAIN_PLACEHOLDER`)
+        traefik.http.routers.SERVICE_NAME_PLACEHOLDER.entrypoints: https
+        traefik.http.routers.SERVICE_NAME_PLACEHOLDER.tls: true
+        # Middlewares
+        traefik.http.routers.SERVICE_NAME_PLACEHOLDER.middlewares: chain-no-auth@file
+        ## HTTP Services
+        traefik.http.routers.SERVICE_NAME_PLACEHOLDER.service: SERVICE_NAME_PLACEHOLDER-svc
+        traefik.http.services.SERVICE_NAME_PLACEHOLDER-svc.loadbalancer.server.port: PORT_PLACEHOLDER
