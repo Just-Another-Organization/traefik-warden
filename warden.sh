@@ -30,6 +30,8 @@ MODES=("$CREATE_MODE" "$GENERATE_MODE" "$START_MODE" "$STOP_MODE")
 DEFAULT_COMPOSE_PATH="$PWD/docker-compose.yaml"
 WARDEN_PLACEHOLDER="warden-"
 VERSION="1.0-beta"
+TRUE='true'
+FALSE='false'
 
 usage() {
     cat <<EOF
@@ -106,6 +108,7 @@ parse_params() {
     service_name=""
     template_name="default"
     compose_file=""
+    no_confirm=$FALSE
 
     mode=${1-""}
     [[ ${MODES[*]} =~ ${mode} ]] && shift
@@ -117,6 +120,7 @@ parse_params() {
         -v | --version) die "Version $VERSION" ;;
         -V | --verbose) set -x ;;
         -nc | --no-color) NO_COLOR=1 ;;
+        -q | --no-confirm) no_confirm=$TRUE ;;
         -s | --service)
             service_name=${2-""}
             shift
@@ -191,7 +195,19 @@ create_service_config() {
 
     echo "$placeholders" | jq -c '.[]' | while read -r i; do
         key=$(echo "$i" | jq -r 'keys | .[]')
-        value=${!key:-$(echo "$i" | jq -r '.[]')}
+        env_key_value="${!key:-""}"
+        if [[ -z "$env_key_value" ]]; then
+            default_value=$(echo "$i" | jq -r '.[]')
+            value="$default_value"
+            if [[ "$no_confirm" == "$FALSE" ]]; then
+                read -r -p "${key} variable is not set, define a value (default: ${default_value}): " user_value < /dev/tty
+                if [[ -n "$user_value" ]]; then
+                    value="$user_value"
+                fi
+            fi
+        else
+            value="$env_key_value"
+        fi
         sed -i "s/$key/$value/g" "$service_config"
     done
 }
