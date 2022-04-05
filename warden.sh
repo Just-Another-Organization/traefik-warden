@@ -28,7 +28,7 @@ START_MODE="start"
 STOP_MODE="stop"
 MODES=("$CREATE_MODE" "$GENERATE_MODE" "$START_MODE" "$STOP_MODE")
 DEFAULT_COMPOSE_PATH="$PWD/docker-compose.yaml"
-WARDEN_PLACEHOLDER="warden-"
+WARDEN_PLACEHOLDER="warden"
 VERSION="1.0-beta"
 TRUE='true'
 FALSE='false'
@@ -103,8 +103,6 @@ die() {
 }
 
 parse_params() {
-    port=""
-    domain=""
     service_name=""
     template_name="default"
     compose_file=""
@@ -112,7 +110,6 @@ parse_params() {
 
     mode=${1-""}
     [[ ${MODES[*]} =~ ${mode} ]] && shift
-    [[ -n "$mode" ]] && [[ "$mode" != "$CREATE_MODE" ]] && service_name=${1-""}
 
     while :; do
         case "${1-}" in
@@ -139,6 +136,7 @@ parse_params() {
         shift
     done
 
+    [[ -n "$mode" ]] && [[ -z "$service_name" ]] && service_name=${1-""}
     return 0
 }
 
@@ -152,7 +150,7 @@ check_params() {
         [[ -z "$compose_file" ]] && [ -f "$DEFAULT_COMPOSE_PATH" ] && compose_file="$DEFAULT_COMPOSE_PATH"
         [[ -z "$compose_file" ]] && die "No docker-compose.yaml defined" || compose_file=$(readlink -f "$compose_file")
 
-        warden_docker_compose="$(dirname "$compose_file")/$WARDEN_PLACEHOLDER$(basename "$compose_file")"
+        warden_docker_compose="$(dirname "$compose_file")/$WARDEN_PLACEHOLDER-$service_name-$(basename "$compose_file")"
     fi
 }
 
