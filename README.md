@@ -25,6 +25,7 @@ The only dependency to install is `yq` (version v2).
 pip install yq
 ```
 
+### Install the tool
 To install Warden simply clone the repository and run the `install.sh` script.
 ```shell
 git clone https://github.com/Just-Another-Organization/JA-Traefik-Warder.git
@@ -36,6 +37,13 @@ The installation script install the `warden` command and copy the `services` and
 ```shell
 WARDEN_ROOT=/your/custom/location/ ./install.sh  
 ```
+
+Remember to export the `WARDEN_ROOT` env in the `$HOME/.bashrc` `$HOME/.profile` or equivalent.
+
+```shell
+echo 'export WARDEN_ROOT="$HOME/.warden/"' >> $HOME/.bashrc
+```
+
 
 ## Using Warden
 You can use Warden to start and stop services starting from a `docker-compose.yaml`. Ater defined the service configuration you can start the service through Traefik entering in the directory where is your `docker-compose.yaml` and using the `start` mode.
