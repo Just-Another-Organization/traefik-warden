@@ -15,7 +15,13 @@ Warden helps to manage services deploy without changes is your `docker-compose.y
 First of all, you need to define a service configuration writing it on your own or starting from a template. When invoked, Warden simply creates a copy on the fly of the `docker-compose.yaml` that you want to deploy, and injects the service configurations in the copy. After doing this, Warden starts the services defined in the `docker-compose.yaml` and cleans the environment removing the copy.
 
 ## Install Warden
-First of all install the dependencies.
+If you can access to the AUR you can use you AUR package manager to simply install `traefik-warden-git` 
+```shell
+# Example using yay
+yay -S traefik-warden-git
+```
+
+Otherwise, first of all install the dependencies.
 
 ### Install the dependencies
 The only dependency to install is `yq` (version v2).
@@ -27,13 +33,7 @@ pip install yq
 
 ### Install the tool
 
-If you can access to the AUR you can use you AUR package manager to simply install `traefik-warden-git` 
-```shell
-# Example using yay
-yay -S traefik-warden-git
-```
-
-Otherwise, to install Warden simply clone the repository and run the `install.sh` script.
+To install Warden simply clone the repository and run the `install.sh` script.
 ```shell
 git clone https://github.com/Just-Another-Organization/JA-Traefik-Warder.git
 cd JA-Traefik-Warder/
