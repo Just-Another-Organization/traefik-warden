@@ -27,14 +27,13 @@ pip install yq
 
 ### Install the tool
 
-# AUR repository
 If you can access to the AUR you can use you AUR package manager to simply install `traefik-warden-git` 
 ```shell
 # Example using yay
 yay -S traefik-warden-git
 ```
 
-To install Warden simply clone the repository and run the `install.sh` script.
+Otherwise, to install Warden simply clone the repository and run the `install.sh` script.
 ```shell
 git clone https://github.com/Just-Another-Organization/JA-Traefik-Warder.git
 cd JA-Traefik-Warder/
