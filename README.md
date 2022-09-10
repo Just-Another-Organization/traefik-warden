@@ -1,4 +1,4 @@
-# JA-Traefik-Warden
+# traefik-warden
 
 Warden is a Just Another project that helps to manage services through [Traefik](https://github.com/traefik/traefik).
 
@@ -35,8 +35,8 @@ pip install yq
 
 To install Warden simply clone the repository and run the `install.sh` script.
 ```shell
-git clone https://github.com/Just-Another-Organization/JA-Traefik-Warder.git
-cd JA-Traefik-Warder/
+git clone https://github.com/Just-Another-Organization//traefik-warden.git
+cd /traefik-warden/
 ./install.sh
 ```
 The installation script install the `warden` command and copy the `services` and `templates` directories in the `WARDEN_ROOT`. If no `WARDEN_ROOT` environment varibale is set the default value and location will be set to `$HOME/.warden`. If you want to set a different location you can define the variable before run the installation script.
