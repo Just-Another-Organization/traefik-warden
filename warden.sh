@@ -26,7 +26,9 @@ CREATE_MODE="create"
 GENERATE_MODE="generate"
 START_MODE="start"
 STOP_MODE="stop"
-MODES=("$CREATE_MODE" "$GENERATE_MODE" "$START_MODE" "$STOP_MODE")
+SERVICES_MODE="services"
+TEMPLATES_MODE="templates"
+MODES=("$CREATE_MODE" "$GENERATE_MODE" "$START_MODE" "$STOP_MODE" "$SERVICES_MODE" "$TEMPLATES_MODE")
 DEFAULT_COMPOSE_PATH="$PWD/docker-compose.yaml"
 WARDEN_PLACEHOLDER="warden"
 VERSION="1.0-beta"
@@ -37,7 +39,7 @@ usage() {
     cat <<EOF
 Usage: $(basename "${BASH_SOURCE[0]}") mode [-h] [-v] [-V] [-nc] [-p] port [-d] domain [-s] service [-f] file
 
-JA-Traefik-Warder helps to manage services through Traefik
+Warden helps to manage services through Traefik
 
 Available modes:
 
@@ -45,6 +47,8 @@ create              Create new service config in "$WARDEN_ROOT/config" starting 
 generate            Generate a new docker-compose.yaml with both global and service specific warden configurations
 start               Automatically generate docker-compose, start service and clean docker-compose
 stop                Automatically generate docker-compose, start service and clean docker-compose
+services            List available services
+templates           List available templates
 
 Available options:
 
@@ -198,7 +202,7 @@ create_service_config() {
             default_value=$(echo "$i" | jq -r '.[]')
             value="$default_value"
             if [[ "$no_confirm" == "$FALSE" ]]; then
-                read -r -p "${key} variable is not set, define a value (default: ${default_value}): " user_value < /dev/tty
+                read -r -p "${key} variable is not set, define a value (default: ${default_value}): " user_value </dev/tty
                 if [[ -n "$user_value" ]]; then
                     value="$user_value"
                 fi
@@ -214,8 +218,27 @@ clean_environment() {
     rm "$warden_docker_compose"
 }
 
+list_services() {
+    ls "$services_dir"
+}
+
+list_templates() {
+    ls "$templates_dir"
+}
+
 parse_params "$@"
 setup_colors
+
+if [[ "$mode" == "$SERVICES_MODE" ]]; then
+    list_services
+    die "Services listed"
+fi
+
+if [[ "$mode" == "$TEMPLATES_MODE" ]]; then
+    list_templates
+    die "Templates listed"
+fi
+
 check_params
 
 msg "${INFO}Starting:${NOFORMAT}"
